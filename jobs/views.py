@@ -14,13 +14,14 @@ from .models import Job
 from users.models import JobSeekerProfile
 from .serializers import JobSerializer
 
+# Download necessary NLTK resources
 nltk.download('punkt')
 nltk.download('stopwords')
 
 
 # ✅ Job List & Create View (Only Recruiters Can Create Jobs)
 class JobListCreateView(generics.ListCreateAPIView):
-    queryset = Job.objects.all()
+    queryset = Job.objects.select_related("recruiter").all()  # Optimized query
     serializer_class = JobSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -32,7 +33,7 @@ class JobListCreateView(generics.ListCreateAPIView):
 
 # ✅ Job Detail View (View, Update, Delete Job - Only the Recruiter Who Posted It)
 class JobDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Job.objects.all()
+    queryset = Job.objects.select_related("recruiter").all()
     serializer_class = JobSerializer
     permission_classes = [permissions.IsAuthenticated]
 

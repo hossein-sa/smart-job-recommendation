@@ -1,8 +1,11 @@
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from .models import JobApplication
-from .serializers import JobApplicationSerializer
 from jobs.models import Job
+from .serializers import JobApplicationSerializer
+
 
 class ApplyForJobView(generics.CreateAPIView):
     serializer_class = JobApplicationSerializer
@@ -24,4 +27,20 @@ class ApplyForJobView(generics.CreateAPIView):
 
         application = JobApplication.objects.create(job_seeker=request.user, job=job)
         serializer = self.get_serializer(application)
+
+        # Send Email Notification to Recruiter
+        subject = f"New Job Application for {job.title}"
+        message = f"Hello {job.recruiter.username},\n\n" \
+                  f"{request.user.username} has applied for the position: {job.title}.\n" \
+                  f"Login to your account to review the application.\n\n" \
+                  f"Best Regards,\nSmart Job Recommendation Team"
+
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [job.recruiter.email],
+            fail_silently=False,
+        )
+
         return Response(serializer.data, status=201)

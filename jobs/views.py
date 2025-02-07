@@ -1,7 +1,9 @@
 from rest_framework import generics, permissions
-from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied  # ✅ Fix: Import from exceptions
+
 from .models import Job
 from .serializers import JobSerializer
+
 
 class JobListCreateView(generics.ListCreateAPIView):
     queryset = Job.objects.all()
@@ -10,5 +12,6 @@ class JobListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         if self.request.user.role != "recruiter":
-            return Response({"error": "Only recruiters can post jobs"}, status=403)
+            raise PermissionDenied("Only recruiters can post jobs.")  # ✅ Now correctly raises PermissionDenied
         serializer.save(recruiter=self.request.user)
+

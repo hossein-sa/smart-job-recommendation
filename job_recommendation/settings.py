@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Added DRF
     'rest_framework_simplejwt',  # Added JWT authentication
-    'users',  # New app
+    'users',
+    'jobs',
+    'applications',
 ]
 
 MIDDLEWARE = [

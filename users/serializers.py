@@ -6,20 +6,25 @@ from .models import JobSeekerProfile, RecruiterProfile
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)  # Ensure password is included
     job_seeker_profile = serializers.SerializerMethodField()
     recruiter_profile = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role', 'job_seeker_profile', 'recruiter_profile']
+        fields = ['id', 'username', 'email', 'password', 'role', 'job_seeker_profile', 'recruiter_profile']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
+        password = validated_data.pop('password', None)  # Ensure password is removed before passing to create_user
+        if not password:
+            raise serializers.ValidationError({"password": "This field is required."})
+
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            role=validated_data['role']
+            username=validated_data.get('username'),
+            email=validated_data.get('email'),
+            password=password,
+            role=validated_data.get('role', 'job_seeker')
         )
         return user
 
@@ -32,6 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'recruiter_profile'):
             return RecruiterProfileSerializer(obj.recruiter_profile).data
         return None
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()

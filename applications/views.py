@@ -8,10 +8,45 @@ from .serializers import JobApplicationSerializer
 
 
 class ApplyForJobView(generics.CreateAPIView):
+    """
+    View to handle the process of applying for a job.
+
+    This view allows authenticated users to apply for a specific job. It performs the following:
+    - Validates that the user is authenticated and has the role of 'job_seeker'.
+    - Ensures the job exists.
+    - Checks that the user has not already applied for the job.
+    - Creates a new job application.
+    - Sends an email notification to the recruiter.
+
+    Attributes:
+        serializer_class (JobApplicationSerializer): Serializer to validate and represent job application data.
+        permission_classes (list): Permission class to ensure only authenticated users can apply.
+
+    Methods:
+        create(request, *args, **kwargs): Handles the job application creation, validation, and email notification.
+    """
+
     serializer_class = JobApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the creation of a job application and sends an email notification to the recruiter.
+
+        This method performs the following:
+        - Retrieves the job using the job ID provided in the URL.
+        - Checks if the user is a job seeker.
+        - Verifies that the user has not already applied for the job.
+        - Creates a job application and sends a notification email to the recruiter.
+
+        Args:
+            request (Request): The incoming HTTP request containing the user's data and job application details.
+            *args (tuple): Additional positional arguments.
+            **kwargs (dict): Keyword arguments, including the job ID.
+
+        Returns:
+            Response: A response containing the job application data and the status code.
+        """
         job_id = kwargs.get("job_id")
         job = Job.objects.filter(id=job_id).first()
 
